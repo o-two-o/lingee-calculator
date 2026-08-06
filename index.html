@@ -343,26 +343,49 @@ function getPointPrice(points) {
     return { unit: 0.20, total: points * 0.20 };
 }
 
+function addTierRow() {
+    const container = document.getElementById('tier-rows');
+    // 检查已选档位
+    const usedTiers = new Set();
+    container.querySelectorAll('.tier-select').forEach(s => usedTiers.add(s.value));
+    const allTiers = Object.keys(USER_TIERS);
+    const available = allTiers.filter(t => !usedTiers.has(t));
+    if (available.length === 0) return; // 4个档位都已选
+    const firstRow = container.querySelector('.tier-row');
+    const newRow = firstRow.cloneNode(true);
+    const select = newRow.querySelector('.tier-select');
+    const seats = newRow.querySelector('.tier-seats');
+    const nextTier = available[0];
+    select.value = nextTier;
+    seats.value = USER_TIERS[nextTier].minSeats;
+    seats.min = USER_TIERS[nextTier].minSeats;
+    newRow.querySelector('.btn-cancel').style.display = 'block';
+    // 禁用已选的选项
+    updateTierOptions();
+    container.appendChild(newRow);
+    // 隐藏添加按钮如果4个都选了
+    const addBtn = document.querySelector('button[onclick="addTierRow()"]');
+    if (addBtn) addBtn.style.display = (usedTiers.size + 1 >= 4) ? 'none' : 'block';
+    calculateAll();
+}
+
+function updateTierOptions() {
+    const usedTiers = new Set();
+    document.querySelectorAll('.tier-select').forEach(s => usedTiers.add(s.value));
+    document.querySelectorAll('.tier-select').forEach(select => {
+        Array.from(select.options).forEach(opt => {
+            opt.disabled = usedTiers.has(opt.value) && select.value !== opt.value;
+        });
+    });
+}
+
 function onTierChange(selectEl) {
     const row = selectEl.closest('.tier-row');
     const tier = USER_TIERS[selectEl.value];
     const seatsInput = row.querySelector('.tier-seats');
     seatsInput.min = tier.minSeats;
     seatsInput.value = tier.minSeats;
-    calculateAll();
-}
-
-function addTierRow() {
-    const container = document.getElementById('tier-rows');
-    const firstRow = container.querySelector('.tier-row');
-    const newRow = firstRow.cloneNode(true);
-    const select = newRow.querySelector('.tier-select');
-    const seats = newRow.querySelector('.tier-seats');
-    select.value = 'basic';
-    seats.value = USER_TIERS.basic.minSeats;
-    seats.min = USER_TIERS.basic.minSeats;
-    newRow.querySelector('.btn-cancel').style.display = 'block';
-    container.appendChild(newRow);
+    updateTierOptions();
     calculateAll();
 }
 
@@ -370,6 +393,10 @@ function removeTierRow(btn) {
     const container = document.getElementById('tier-rows');
     if (container.querySelectorAll('.tier-row').length > 1) {
         btn.closest('.tier-row').remove();
+        updateTierOptions();
+        // 重新显示添加按钮
+        const addBtn = document.querySelector('button[onclick="addTierRow()"]');
+        if (addBtn) addBtn.style.display = 'block';
         calculateAll();
     }
 }
