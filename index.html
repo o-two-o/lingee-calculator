@@ -124,8 +124,8 @@
             <ul style="font-size:11px;color:#475569;padding-left:16px;line-height:1.6;margin:0;">
                 <li><b>四档用户体系</b>：基础¥58/年(100起) / 标准¥168/年(30起) / 专业¥688/年(5起) / 高级¥1,188/年(1起)。</li>
                 <li><b>点数含量</b>：基础100点 / 标准1,200点 / 专业6,000点 / 高级12,000点/年。</li>
-                <li><b>点数包</b>：¥1,000/5,000点（¥0.10/点），2年有效期，按需购买。</li>
-                <li><b>超额计费</b>：统一 ¥100/千点（¥0.10/点）。</li>
+                <li><b>点数包</b>：¥1,000/5,000点（¥0.20/点），2年有效期，按需购买，按¥1,000整数倍购买。</li>
+                <li><b>超额计费</b>：无超额计费，用完自带点数后需购买点数包。</li>
                 <li><b>老客户权益</b>：原专业版¥1,188客户自动升级为高级用户，点数翻倍至12,000点/年。</li>
                 <li><b>AI套件</b>对接金蝶云星空（中型企业）；<b>AI星瀚</b>对接金蝶云星瀚（大型集团）。</li>
             </ul>
@@ -145,7 +145,7 @@
     </div>
     <div class="side-panel">
         <div class="card result-panel">
-            <h2>3. 灵基专业版报价建议</h2>
+            <h2>3. 灵基报价建议</h2>
             <button class="btn-generate" onclick="openModal()">生成增购建议</button>
             <div id="result-content" style="display:none;margin-top:16px;">
                 <div class="metric-grid">
@@ -163,12 +163,12 @@
                     <div class="metric-box"><div class="metric-title">额外点数包费用</div><div class="metric-value" id="lbl-point-total-cost">¥0</div></div>
                 </div>
                 <div class="metric-box" style="background:#eff6ff;border:1px solid #bfdbfe;text-align:center;margin-bottom:16px;">
-                    <div class="metric-title" style="color:var(--primary);">灵基专业版 年度合同总价 (TCV)</div>
+                    <div class="metric-title" style="color:var(--primary);">灵基年度合同总价 (TCV)</div>
                     <div class="price-text" id="lbl-tcv-price">¥0</div>
                 </div>
             </div>
             <div style="margin-top:12px;font-size:10px;color:#94a3b8;line-height:1.4;">
-                * 点数包：¥1,000/5,000点（¥0.10/点），2年有效期。超额统一按¥100/千点计费。最小购买 5,000 点。
+                * 点数包：¥1,000/5,000点（¥0.20/点），2年有效期。按¥1,000整数倍购买，最小购买 5,000 点。
             </div>
         </div>
     </div>
@@ -335,8 +335,8 @@ const USER_TIERS = {
 };
 
 function getPointPrice(points) {
-    if (points <= 0) return { unit: 0.10, total: 0 };
-    return { unit: 0.10, total: points * 0.10 };
+    if (points <= 0) return { unit: 0.20, total: 0 };
+    return { unit: 0.20, total: points * 0.20 };
 }
 
 function onTierChange(selectEl) {
