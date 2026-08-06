@@ -111,7 +111,7 @@
                         <option value="pro">专业用户 — ¥688/年（5起售，含6,000点）</option>
                         <option value="advanced" selected>高级用户 — ¥1,188/年（1起售，含12,000点）</option>
                     </select></div>
-                    <div class="form-item" style="flex:1;"><label>席位数</label><input type="number" class="tier-seats" value="5" min="1" oninput="calculateAll()"></div>
+                    <div class="form-item" style="flex:1;"><label>席位数</label><input type="number" class="tier-seats" value="5" min="1" oninput="onSeatsInput(this)" onblur="onSeatsBlur(this)"></div>
                     <div class="form-item" style="flex:1;"><label>小计</label><input type="text" class="tier-subtotal" value="¥0" readonly style="font-weight:700;color:var(--primary);"></div>
                     <div class="form-item" style="flex:1;"><label>含点数</label><input type="text" class="tier-points" value="0" readonly style="color:var(--green);"></div>
                     <button class="btn-cancel" style="flex:0 0 auto;padding:8px 12px;border-radius:6px;font-size:12px;display:none;" onclick="removeTierRow(this)">删除</button>
@@ -359,6 +359,8 @@ function addTierRow() {
     select.value = nextTier;
     seats.value = USER_TIERS[nextTier].minSeats;
     seats.min = USER_TIERS[nextTier].minSeats;
+    seats.style.borderColor = 'var(--border)';
+    seats.style.background = '#fff';
     newRow.querySelector('.btn-cancel').style.display = 'block';
     // 禁用已选的选项
     updateTierOptions();
@@ -397,6 +399,35 @@ function removeTierRow(btn) {
         // 重新显示添加按钮
         const addBtn = document.querySelector('button[onclick="addTierRow()"]');
         if (addBtn) addBtn.style.display = 'block';
+        calculateAll();
+    }
+}
+
+// 席位数输入处理
+function onSeatsInput(input) {
+    const row = input.closest('.tier-row');
+    const tier = USER_TIERS[row.querySelector('.tier-select').value];
+    const val = parseInt(input.value);
+    if (!input.value || isNaN(val)) {
+        input.style.borderColor = 'var(--red)';
+        input.style.background = '#fef2f2';
+    } else if (val < tier.minSeats) {
+        input.style.borderColor = 'var(--orange)';
+        input.style.background = '#fffbeb';
+    } else {
+        input.style.borderColor = 'var(--border)';
+        input.style.background = '#fff';
+    }
+    calculateAll();
+}
+
+function onSeatsBlur(input) {
+    const row = input.closest('.tier-row');
+    const tier = USER_TIERS[row.querySelector('.tier-select').value];
+    if (!input.value || isNaN(parseInt(input.value))) {
+        input.value = tier.minSeats;
+        input.style.borderColor = 'var(--border)';
+        input.style.background = '#fff';
         calculateAll();
     }
 }
