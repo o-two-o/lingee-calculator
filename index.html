@@ -106,7 +106,7 @@
             <div id="tier-rows">
                 <div class="tier-row" style="display:flex;gap:10px;align-items:end;margin-bottom:10px;">
                     <div class="form-item" style="flex:2;"><label>用户版本</label><select class="tier-select" onchange="onTierChange(this)">
-                        <option value="basic">基础用户 — ¥58/年（100起售，含100点）</option>
+                        <option value="basic">基础用户 — ¥58/年（100起售，含300点）</option>
                         <option value="standard">标准用户 — ¥168/年（30起售，含1,200点）</option>
                         <option value="pro">专业用户 — ¥688/年（5起售，含6,000点）</option>
                         <option value="advanced" selected>高级用户 — ¥1,188/年（1起售，含12,000点）</option>
@@ -123,10 +123,14 @@
             <h3 style="margin:0 0 8px;font-size:14px;">测算假设（2026年7月报价）</h3>
             <ul style="font-size:11px;color:#475569;padding-left:16px;line-height:1.6;margin:0;">
                 <li><b>四档用户体系</b>：基础¥58/年(100起) / 标准¥168/年(30起) / 专业¥688/年(5起) / 高级¥1,188/年(1起)。</li>
-                <li><b>点数含量</b>：基础100点 / 标准1,200点 / 专业6,000点 / 高级12,000点/年。</li>
+                <li><b>点数含量</b>：基础300点 / 标准1,200点 / 专业6,000点 / 高级12,000点/年。</li>
+                <li><b>点数归属</b>：用户席位自带点数为<b>个人专享</b>（1年有效，到期作废）；点数包为<b>全员共享</b>（2年有效，管理员分配）。</li>
                 <li><b>点数包</b>：¥1,000/5,000点（¥0.20/点），2年有效期，按需购买，按¥1,000整数倍购买。</li>
-                <li><b>超额计费</b>：无超额计费，用完自带点数后需购买点数包。</li>
-                <li><b>老客户权益</b>：原专业版¥1,188客户自动升级为高级用户，点数翻倍至12,000点/年。</li>
+                <li><b>智能体权限</b>：基础用户=费用报销智能体；标准用户=人人业务智能体；专业用户+=财务/供应链等全部智能体。</li>
+                <li><b>ERP连接</b>：基础用户(¥58)即可连接ERP自然语言问数；专业用户+可使用Build开发技能/智能体。</li>
+                <li><b>点数消耗</b>：非固定值，随场景复杂度变化；有衰减机制（同类场景越用越省）。后续将透明化每任务消耗明细。</li>
+                <li><b>老客户权益</b>：原专业版/高级版客户自动升级为高级用户，点数翻倍至12,000点/年。</li>
+                <li><b>互斥说明</b>：灵基不支持与ERP模块合并购买，需单独下单仅含灵基的AI套件产品。</li>
                 <li><b>AI套件</b>对接金蝶云星空（中型企业）；<b>AI星瀚</b>对接金蝶云星瀚（大型集团）。</li>
             </ul>
         </div>
@@ -328,7 +332,7 @@ function updateCostDisplay() {
 
 // ===== 四档用户定价 =====
 const USER_TIERS = {
-    basic:    { price: 58,    points: 100,    minSeats: 100, name: '基础用户' },
+    basic:    { price: 58,    points: 300,    minSeats: 100, name: '基础用户' },
     standard: { price: 168,   points: 1200,   minSeats: 30,  name: '标准用户' },
     pro:      { price: 688,   points: 6000,   minSeats: 5,   name: '专业用户' },
     advanced: { price: 1188,  points: 12000,  minSeats: 1,   name: '高级用户' },
