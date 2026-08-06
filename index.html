@@ -424,9 +424,13 @@ function calculateAll() {
         const tierKey = row.querySelector('.tier-select').value;
         const tier = USER_TIERS[tierKey];
         const seatsInput = row.querySelector('.tier-seats');
-        let seats = parseInt(seatsInput.value) || tier.minSeats;
-        // 只在输入框失焦时强制最小值，输入过程中不重置
-        if (seats < tier.minSeats && document.activeElement !== seatsInput) { seats = tier.minSeats; seatsInput.value = seats; }
+        // 输入为空时用0计算，不静默回退到最小值
+        let seats = parseInt(seatsInput.value);
+        if (isNaN(seats)) seats = 0;
+        // 失焦时如果低于最小值才恢复（输入过程中不干预）
+        if (seats > 0 && seats < tier.minSeats && document.activeElement !== seatsInput) {
+            seats = tier.minSeats; seatsInput.value = seats;
+        }
         const cost = seats * tier.price;
         const points = seats * tier.points;
         row.querySelector('.tier-subtotal').value = `¥${cost.toLocaleString()}`;
