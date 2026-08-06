@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>灵基点数增购测算工具 v2</title>
+<style>
+:root{--primary:#1b63c5;--bg:#f8fafc;--border:#e2e8f0;--dark:#1e293b;--green:#10b981;--orange:#f59e0b;--red:#ef4444}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--dark);padding:20px;margin:0;line-height:1.5}
+.container{max-width:1500px;margin:0 auto;display:grid;grid-template-columns:8fr 4fr;gap:20px}
+header{grid-column:span 2;background:#fff;padding:20px 25px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border)}
+h1{margin:0 0 6px;color:var(--primary);font-size:22px}
+p.subtitle{margin:0;color:#64748b;font-size:13px}
+.badge-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;background:#eff6ff;color:var(--primary);border:1px solid #bfdbfe}
+.badge.green{background:#ecfdf5;color:var(--green);border-color:#a7f3d0}
+.card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border);margin-bottom:16px}
+h2{font-size:16px;margin:0 0 16px;padding-bottom:8px;border-bottom:2px solid #f1f5f9}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px}
+.form-item{display:flex;flex-direction:column}
+label{font-weight:600;margin-bottom:6px;font-size:13px;color:#475569}
+input,select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box}
+input[readonly]{background:#f1f5f9;color:#64748b}
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid #f1f5f9}
+.tab{padding:10px 20px;cursor:pointer;font-size:14px;font-weight:600;color:#64748b;border-bottom:3px solid transparent;transition:all .2s}
+.tab.active{color:var(--primary);border-color:var(--primary)}
+.tab:hover{color:var(--primary)}
+.scene-table{width:100%;border-collapse:collapse;font-size:12px}
+.scene-table th{background:#f1f5f9;font-weight:600;padding:10px;text-align:left;border-bottom:2px solid var(--border)}
+.scene-table td{padding:10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.section-row{background:#f1f5f9;font-weight:700;color:var(--primary)}
+.section-row td{border-left:4px solid var(--primary)}
+.input-freq{width:70px!important;padding:5px!important;text-align:center;font-weight:bold}
+.desc-text{font-size:11px;color:#64748b;margin-top:3px;display:block;line-height:1.3}
+.result-panel{position:sticky;top:20px;border-top:4px solid var(--primary)}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.metric-box{padding:12px;border-radius:8px;background:#f8fafc;border:1px solid var(--border)}
+.metric-title{font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px}
+.metric-value{font-size:18px;font-weight:700}
+.price-text{font-size:24px;color:var(--primary);font-weight:800}
+.status-banner{padding:12px;border-radius:8px;text-align:center;font-weight:700;font-size:14px;margin-bottom:16px}
+.status-enough{background:#ecfdf5;color:var(--green);border:1px solid #a7f3d0}
+.status-short{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+.btn-generate{display:block;width:100%;padding:12px;margin-top:16px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer}
+.btn-generate:hover{background:#154ea1}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal-box{background:#fff;border-radius:12px;padding:25px;width:440px;max-width:90vw}
+.modal-box h3{margin-top:0;color:var(--primary);font-size:17px;margin-bottom:16px}
+.modal-form-item{margin-bottom:14px}
+.modal-form-item label{display:block;margin-bottom:5px;font-size:13px;font-weight:600}
+.modal-btns{display:flex;gap:10px;margin-top:20px}
+.modal-btns button{flex:1;padding:10px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;border:none}
+.btn-submit{background:var(--primary);color:#fff}
+.btn-cancel{background:#f1f5f9;color:#475569;border:1px solid var(--border)!important}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;z-index:99999;display:none}
+.toast.show{display:block;animation:fadeInOut 3s ease}
+.toast.error{background:var(--red)}
+@keyframes fadeInOut{0%{opacity:0;transform:translateX(-50%) translateY(-10px)}15%{opacity:1}85%{opacity:1}100%{opacity:0}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast-msg"></div>
+<div class="modal-overlay" id="modal-overlay">
+<div class="modal-box">
+<h3>填写信息并生成增购建议</h3>
+<div class="modal-form-item"><label>身份 *</label><select id="modal-identity" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;"><option value="">请选择</option><option>金蝶伙伴员工</option><option>金蝶员工</option></select></div>
+<div class="modal-form-item"><label>公司名称 *</label><input type="text" id="modal-company" placeholder="请输入公司名称"></div>
+<div class="modal-form-item"><label>姓名 *</label><input type="text" id="modal-name" placeholder="请输入姓名"></div>
+<div class="modal-form-item"><label>客户名称 *</label><input type="text" id="modal-customer" placeholder="请输入客户名称"></div>
+<div class="modal-form-item"><label>客户预算 *</label><div style="display:flex;align-items:center;gap:6px;"><input type="number" id="modal-budget" placeholder="例如：50" style="flex:1;" min="0"><span style="font-size:13px;color:#475569;">万/年</span></div></div>
+<div class="modal-btns"><button class="btn-cancel" onclick="closeModal()">取消</button><button class="btn-submit" id="btn-do-submit" onclick="submitRecord()">确认提交</button></div>
+</div>
+</div>
+<div class="container">
+<header>
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<div>
+<h1>灵基点数增购测算工具 v2（仅供测算参考，以实际业务使用为准）</h1>
+<p class="subtitle">金蝶灵基 AI 操作系统 · 对齐企业部门职能及日常业务量分布的 AI 消耗测算</p>
+<div class="badge-row">
+<span class="badge">专业版 ¥99/人/月</span>
+<span class="badge">每月赠送 500 点/人</span>
+<span class="badge green">14 天免费全功能试用</span>
+<span class="badge">实施周期 10-12 周</span>
+<span class="badge green">信通院 TSM 增强级安全认证</span>
+</div>
+</div>
+<a href="javascript:void(0)" onclick="openModal()" style="font-size:12px;color:#64748b;text-decoration:underline;white-space:nowrap;">反馈测算建议</a>
+</div>
+</header>
+<div class="main-panel">
+<div class="card">
+<h2>1. 客户基本属性与席位配置</h2>
+<div class="form-grid">
+<div class="form-item"><label>业务领域典型画像预设</label><select id="industry" onchange="applyIndustryPreset();calculateAll();">
+<option value="custom">自由定制模式</option>
+<option value="finance_heavy">制造/快消等大型企业（财务类重度）</option>
+<option value="trade_heavy">跨境电商/大宗供应链（供应链协同频繁）</option>
+<option value="tech_office">高科技/现代服务业（Chat高频、Build活跃）</option>
+<option value="manufacturing">制造业（产线密集、成本核算重）</option>
+<option value="retail">零售业（多门店、销售/库存高频）</option>
+<option value="group">集团型企业（多组织、对账/合并报表重）</option>
+</select></div>
+<div class="form-item"><label>拟采购用户席位数（5 席起售）</label><input type="number" id="seats" value="5" min="5" oninput="calculateAll()"></div>
+</div>
+<div class="form-grid">
+<div class="form-item"><label>单据/文件复杂度</label><select id="complexity" onchange="updateCostDisplay();calculateAll();"><option value="standard">标准场景口径</option><option value="complex">防爆舱口径（重度合并报表/长合同条款/多任务串联）</option></select></div>
+<div class="form-item"><label>席位费单价（固定）</label><input type="text" value="¥99 / 用户 / 月" readonly></div>
+</div>
+</div>
+<div class="card" style="background:#f1f5f9;border-left:4px solid #64748b;">
+<h3 style="margin:0 0 8px;font-size:14px;">测算假设</h3>
+<ul style="font-size:11px;color:#475569;padding-left:16px;line-height:1.6;margin:0;">
+<li><b>锚定企业规模</b>：中等规模(ME)客户画像（年营收2-8亿，总员工300-800人，核心团队5-15人）。</li>
+<li><b>定价</b>：专业版 ¥99/人/月 | ¥1188/人/年，每月每人赠送 500 灵基点数；灵基点数按量付费 ¥0.18-0.2/点，最小购买 10,000 点。</li>
+<li><b>点数消耗参考</b>：简单对话 1-5 点，文档生成 10-50 点，Skill 执行 1-10 点，Agent 运行 10-50 点/次。</li>
+<li><b>AI套件</b>对接金蝶云星空（中型企业）；<b>AI星瀚</b>对接金蝶云星瀚（大型集团）。</li>
+</ul>
+</div>
+<div class="card">
+<h2>2. 按产品板块配置月业务量</h2>
+<div class="tabs">
+<div class="tab active" data-suite="all" onclick="switchTab('all')">全部场景</div>
+<div class="tab" data-suite="suite" onclick="switchTab('suite')">AI套件（星空）</div>
+<div class="tab" data-suite="xinghan" onclick="switchTab('xinghan')">AI星瀚</div>
+</div>
+<table class="scene-table">
+<thead><tr><th style="width:48%;">产品板块、细分职能及 AI 智能体</th><th style="width:16%;">单次消耗</th><th style="width:36%;">预计月业务量</th></tr></thead>
+<tbody id="scene-tbody"></tbody>
+</table>
+</div>
+</div>
+<div class="side-panel">
+<div class="card result-panel">
+<h2>3. 灵基专业版报价建议</h2>
+<button class="btn-generate" onclick="openModal()">生成增购建议</button>
+<div id="result-content" style="display:none;margin-top:16px;">
+<div class="metric-grid">
+<div class="metric-box"><div class="metric-title">席位自带年度总点数</div><div class="metric-value" id="lbl-free-year" style="color:var(--green);">0</div></div>
+<div class="metric-box"><div class="metric-title">预计年度总消耗点数</div><div class="metric-value" id="lbl-consume-year">0</div></div>
+</div>
+<div id="status-banner-div" class="status-banner"></div>
+<h3 style="font-size:13px;color:#64748b;border-bottom:1px solid #f1f5f9;padding-bottom:6px;">订阅清单 (年化)</h3>
+<div class="metric-grid">
+<div class="metric-box"><div class="metric-title">基础席位年费</div><div class="metric-value" id="lbl-seat-cost">¥0</div></div>
+<div class="metric-box"><div class="metric-title">建议增购点数包</div><div class="metric-value" id="lbl-suggest-points">0</div></div>
+</div>
+<div class="metric-grid">
+<div class="metric-box"><div class="metric-title">增购点数单价</div><div class="metric-value" id="lbl-point-unit-price">¥0.20</div></div>
+<div class="metric-box"><div class="metric-title">额外点数包费用</div><div class="metric-value" id="lbl-point-total-cost">¥0</div></div>
+</div>
+<div class="metric-box" style="background:#eff6ff;border:1px solid #bfdbfe;text-align:center;margin-bottom:16px;">
+<div class="metric-title" style="color:var(--primary);">灵基专业版 年度合同总价 (TCV)</div>
+<div class="price-text" id="lbl-tcv-price">¥0</div>
+</div>
+</div>
+<div style="margin-top:12px;font-size:10px;color:#94a3b8;line-height:1.4;">
+* 阶梯计价：1-50万点 (0.2元/点)；51-100万点 (0.19元/点)；101万点+ (0.18元/点)。最小购买 10,000 点。
+</div>
+</div>
+</div>
+</div>
+<script>
+const API_ENDPOINT='';
+const structuredScenes=[{suite:'common',isHeader:true,name:"【对话板块】通用日常对话、联网搜索与多模态交互"},{suite:'common',name:"日常通用 Chat（多轮对话、联网搜索与引导式追问）",standard:3,complex:35,desc:"全员碎片化通用日常问答、行业大背景联网信息召回等日常基础高频需求。",freq:{finance_heavy:120,trade_heavy:150,tech_office:300,manufacturing:100,retail:80,group:80}},{suite:'common',name:"多模态多格式文档智能解析与资产沉淀",standard:15,complex:50,desc:"日常对长 Word、Excel 账表、PDF、商务图片提取或生成汇报 PPT 大纲。",freq:{finance_heavy:30,trade_heavy:50,tech_office:80,manufacturing:20,retail:30,group:40}},{suite:'common',name:"图像生成",standard:10,complex:30,desc:"营销物料、图表可视化、产品图等 AI 图像生成。",freq:{finance_heavy:10,trade_heavy:15,tech_office:30,manufacturing:5,retail:40,group:10}},{suite:'common',name:"网页报告生成（发布会/商务沟通两种风格）",standard:30,complex:100,desc:"自动生成发布会风格或商务沟通风格的网页报告。",freq:{finance_heavy:5,trade_heavy:10,tech_office:15,manufacturing:3,retail:10,group:8}},{suite:'common',name:"文件生成（Word/Excel/PDF）",standard:20,complex:80,desc:"自动生成报告、表格、PDF 文档。",freq:{finance_heavy:15,trade_heavy:20,tech_office:30,manufacturing:10,retail:15,group:20}},{suite:'common',name:"财报分析（金钥财报）",standard:160,complex:500,desc:"上市公司财报深度分析，多维度穿透归因。",freq:{finance_heavy:5,trade_heavy:3,tech_office:2,manufacturing:2,retail:3,group:8}},{suite:'common',name:"问道阳明（阳明心学+中国管理模式）",standard:3,complex:10,desc:"中式管理智慧对话，区别于西方管理理论。",freq:{finance_heavy:10,trade_heavy:8,tech_office:5,manufacturing:5,retail:5,group:15}},{suite:'suite',isHeader:true,name:"【CFO助理】决策层实时指挥中枢"},{suite:'suite',name:"今日财务运营简报",standard:15,complex:50,desc:"每工作日自动生成 CFO 专属财务运营简报。",freq:{finance_heavy:22,trade_heavy:22,tech_office:22,manufacturing:22,retail:22,group:22}},{suite:'suite',name:"智能待办中枢",standard:3,complex:10,desc:"财务待办自动汇总与优先级排序。",freq:{finance_heavy:30,trade_heavy:30,tech_office:20,manufacturing:25,retail:20,group:30}},{suite:'suite',name:"财务运营全景看板",standard:160,complex:500,desc:"多维财务看板，按需生成可视化分析。",freq:{finance_heavy:10,trade_heavy:8,tech_office:4,manufacturing:8,retail:5,group:12}},{suite:'suite',name:"现金流预测与预警",standard:160,complex:300,desc:"现金流滚动预测，异常自动预警。",freq:{finance_heavy:8,trade_heavy:5,tech_office:2,manufacturing:6,retail:5,group:10}},{suite:'suite',name:"财经情报中心（23个数据源，每6小时更新）",standard:15,complex:50,desc:"政策监管/税务法规/资本市场/行业动态四大维度情报采集。",freq:{finance_heavy:120,trade_heavy:120,tech_office:60,manufacturing:60,retail:60,group:120}},{suite:'suite',isHeader:true,name:"【CEO办公室】CEO第二大脑"},{suite:'suite',name:"今日决策（全公司扫描+风险等级+建议路径）",standard:160,complex:500,desc:"每工作日执行，全公司经营扫描与决策建议。",freq:{finance_heavy:22,trade_heavy:22,tech_office:22,manufacturing:22,retail:22,group:22}},{suite:'suite',name:"今日摘要（每日简报）",standard:15,complex:50,desc:"每工作日自动生成 CEO 专属简报。",freq:{finance_heavy:22,trade_heavy:22,tech_office:22,manufacturing:22,retail:22,group:22}},{suite:'suite',name:"外部洞察（行业/竞品/政策/舆情）",standard:15,complex:50,desc:"预置+可配置数据源，外部环境监测。",freq:{finance_heavy:60,trade_heavy:60,tech_office:30,manufacturing:30,retail:40,group:60}},{suite:'suite',name:"经营分析（对话式指标追问）",standard:10,complex:35,desc:"CEO 高频交互式指标追问与深度归因。",freq:{finance_heavy:40,trade_heavy:40,tech_office:60,manufacturing:30,retail:30,group:50}},{suite:'suite',name:"日程助理",standard:3,complex:10,desc:"日程管理与提醒。",freq:{finance_heavy:30,trade_heavy:30,tech_office:30,manufacturing:30,retail:30,group:30}},{suite:'suite',isHeader:true,name:"【AI套件-财务类】高频、强刚需、高并发"},{suite:'suite',name:"记账智能体（智能记账与凭证自动生成）",standard:100,complex:210,desc:"月均1200张原始凭证中AI自动化转换及核销25%。",freq:{finance_heavy:300,trade_heavy:50,tech_office:20,manufacturing:200,retail:50,group:150}},{suite:'suite',name:"费用审核智能体",standard:200,complex:320,desc:"对公付款与费用单据AI独立执行20%自动化合规查重初审。",freq:{finance_heavy:120,trade_heavy:40,tech_office:15,manufacturing:80,retail:30,group:100}},{suite:'suite',name:"银企对账智能体",standard:180,complex:300,desc:"银行流水vs日记账自动核对，三层匹配引擎（精确/模糊/语义）。",freq:{finance_heavy:40,trade_heavy:20,tech_office:5,manufacturing:20,retail:15,group:30}},{suite:'suite',name:"往来对账智能体",standard:180,complex:300,desc:"客户应收对账→风险评级→批量生成对账函→自动发送邮件。",freq:{finance_heavy:40,trade_heavy:30,tech_office:5,manufacturing:20,retail:25,group:40}},{suite:'suite',name:"集团内部对账智能体",standard:180,complex:300,desc:"集团内部组织间往来对账。",freq:{finance_heavy:10,trade_heavy:5,tech_office:2,manufacturing:8,retail:5,group:40}},{suite:'suite',name:"结账智能体（期末关账与异常多表核对）",standard:160,complex:1000,desc:"主副账套期末各执行1-2次/月，重度大文件多表跨管线关联。",freq:{finance_heavy:2,trade_heavy:1,tech_office:1,manufacturing:2,retail:2,group:4}},{suite:'suite',name:"成本核算智能体（折旧变动与物料结转）",standard:160,complex:200,desc:"固定资产折旧计提、存货大宗物料成本结转与产线异常损耗分析。",freq:{finance_heavy:15,trade_heavy:2,tech_office:0,manufacturing:30,retail:5,group:10}},{suite:'suite',name:"报表编制智能体",standard:160,complex:300,desc:"资产负债表、利润表自动生成。",freq:{finance_heavy:8,trade_heavy:3,tech_office:2,manufacturing:6,retail:3,group:12}},{suite:'suite',name:"资产管理智能体",standard:160,complex:200,desc:"固定资产台账、折旧、盘点。",freq:{finance_heavy:10,trade_heavy:3,tech_office:1,manufacturing:15,retail:3,group:8}},{suite:'suite',name:"预算管控智能体",standard:160,complex:500,desc:"预算编制、执行监控、偏差分析。",freq:{finance_heavy:15,trade_heavy:5,tech_office:3,manufacturing:10,retail:5,group:20}},{suite:'suite',name:"税务管理智能体",standard:130,complex:200,desc:"开票、纳税申报、税务合规检查。",freq:{finance_heavy:20,trade_heavy:8,tech_office:2,manufacturing:15,retail:8,group:15}},{suite:'suite',name:"资金管理智能体",standard:160,complex:300,desc:"资金计划、头寸管理、现金流预测。",freq:{finance_heavy:12,trade_heavy:8,tech_office:2,manufacturing:8,retail:5,group:15}},{suite:'suite',name:"灵基智能记账员（综合账务检查）",standard:100,complex:210,desc:"综合账务检查，与记账智能体互补。",freq:{finance_heavy:50,trade_heavy:10,tech_office:5,manufacturing:30,retail:10,group:25}},{suite:'suite',isHeader:true,name:"【AI套件-供应链/法务/分析/其他】"},{suite:'suite',name:"询价专员（供应商询价定标与比价助手）",standard:20,complex:60,desc:"日均5-6批次多品类多准则客商比价单及招投标标书查重判定。",freq:{finance_heavy:20,trade_heavy:150,tech_office:2,manufacturing:30,retail:20,group:40}},{suite:'suite',name:"商城采购智能体",standard:50,complex:90,desc:"对接内部或外部工业品采购平台，批量采购申请提取及自动跟催。",freq:{finance_heavy:35,trade_heavy:80,tech_office:10,manufacturing:40,retail:30,group:30}},{suite:'suite',name:"CPQ配置报价助手",standard:20,complex:60,desc:"产品配置与报价生成。",freq:{finance_heavy:30,trade_heavy:100,tech_office:10,manufacturing:40,retail:80,group:20}},{suite:'suite',name:"销售助手",standard:10,complex:35,desc:"销售数据查询与分析看板。",freq:{finance_heavy:40,trade_heavy:60,tech_office:20,manufacturing:30,retail:100,group:30}},{suite:'suite',name:"销售履约智能体",standard:50,complex:90,desc:"销售订单履约跟踪、发货监控。",freq:{finance_heavy:20,trade_heavy:40,tech_office:5,manufacturing:15,retail:60,group:15}},{suite:'suite',name:"库存补货智能体",standard:50,complex:90,desc:"智能补货建议、库存预警。",freq:{finance_heavy:15,trade_heavy:30,tech_office:5,manufacturing:40,retail:80,group:10}},{suite:'suite',name:"合同审查智能体（多语言标准合同风控合规审查）",standard:130,complex:170,desc:"销售、采购、海外物流及双语清关等框架协议长文本法务合规强审。",freq:{finance_heavy:15,trade_heavy:60,tech_office:10,manufacturing:10,retail:10,group:30}},{suite:'suite',name:"法务培训助手（合同商务谈判条款博弈与文本起草）",standard:20,complex:80,desc:"大额核心纠纷或高风险条款模拟对抗博弈、多轮改写对齐。",freq:{finance_heavy:8,trade_heavy:30,tech_office:5,manufacturing:5,retail:5,group:15}},{suite:'suite',name:"经营分析智能体",standard:160,complex:500,desc:"融合ERP财务数据与Excel报表等多源数据，深度可视化分析报告。",freq:{finance_heavy:10,trade_heavy:14,tech_office:4,manufacturing:8,retail:6,group:15}},{suite:'suite',name:"超级分析智能体",standard:160,complex:500,desc:"深度数据分析与可视化，与经营分析智能体互补。",freq:{finance_heavy:10,trade_heavy:14,tech_office:4,manufacturing:5,retail:5,group:10}},{suite:'suite',name:"标书查重",standard:130,complex:170,desc:"投标文件重复性检查。",freq:{finance_heavy:5,trade_heavy:20,tech_office:2,manufacturing:5,retail:3,group:10}},{suite:'suite',name:"项目经理助手",standard:10,complex:35,desc:"项目进度与资源管理。",freq:{finance_heavy:30,trade_heavy:20,tech_office:40,manufacturing:25,retail:15,group:20}},{suite:'suite',name:"ESG对标分析专员",standard:160,complex:500,desc:"ESG绩效对标分析，季度执行。",freq:{finance_heavy:1,trade_heavy:1,tech_office:1,manufacturing:1,retail:1,group:2}},{suite:'suite',name:"ESG奖项申报助手",standard:50,complex:200,desc:"ESG奖项材料准备与申报，年度执行。",freq:{finance_heavy:1,trade_heavy:1,tech_office:1,manufacturing:1,retail:1,group:1}},{suite:'suite',isHeader:true,name:"【AI套件-HR/全员类】"},{suite:'suite',name:"人力问数智能体",standard:8,complex:14,desc:"HR人力资源数据查询，人数统计、组织结构、人员异动、员工明细。",freq:{finance_heavy:150,trade_heavy:150,tech_office:50,manufacturing:100,retail:200,group:100}},{suite:'suite',name:"费报智能体",standard:10,complex:10,desc:"日常费用、差旅报销、邮箱发票采集的AI搭档。",freq:{finance_heavy:16,trade_heavy:32,tech_office:64,manufacturing:20,retail:30,group:30}},{suite:'common',isHeader:true,name:"【开发板块】技能、智能体与苍穹应用自建"},{suite:'common',name:"创建1个技能",standard:5,complex:50,desc:"如：BOM维护查询技能、查询定额汇总信息技能、工作流任务操作技能等。",freq:{finance_heavy:20,trade_heavy:30,tech_office:60,manufacturing:15,retail:10,group:25}},{suite:'common',name:"创建1个智能体",standard:5,complex:50,desc:"如：人事管理专员智能体、WBS批量操作智能体、报销智能体专家等。",freq:{finance_heavy:4,trade_heavy:6,tech_office:15,manufacturing:3,retail:3,group:8}},{suite:'common',name:"创建1个表单/应用",standard:30,complex:200,desc:"如：到访人员信息录入表单，含插件API开发及后端环境部署。",freq:{finance_heavy:4,trade_heavy:6,tech_office:15,manufacturing:3,retail:5,group:6}},{suite:'common',name:"原型探索（自然语言→可交互HTML原型）",standard:30,complex:100,desc:"MVP验证/需求评审/客户演示，支持品牌VI上传、多设备预览。",freq:{finance_heavy:5,trade_heavy:5,tech_office:20,manufacturing:3,retail:5,group:5}},{suite:'xinghan',isHeader:true,name:"【AI星瀚智能体】大型集团企业（对接金蝶云星瀚）"},{suite:'xinghan',name:"销售助手（星瀚）",standard:10,complex:35,desc:"一线销售录单助手，图片/Excel识别下单→价格/信用/库存审查→生单→发货。",freq:{finance_heavy:60,trade_heavy:80,tech_office:20,manufacturing:50,retail:100,group:80}},{suite:'xinghan',name:"库存助手（星瀚）",standard:10,complex:35,desc:"星瀚ERP库存查询与管理。",freq:{finance_heavy:40,trade_heavy:60,tech_office:10,manufacturing:50,retail:80,group:30}},{suite:'xinghan',name:"超级分析智能体（星瀚）",standard:160,complex:500,desc:"星瀚版深度数据分析与可视化。",freq:{finance_heavy:15,trade_heavy:15,tech_office:5,manufacturing:10,retail:8,group:20}},{suite:'xinghan',name:"月结智能体（星瀚）",standard:160,complex:1000,desc:"星瀚月末结账流程。",freq:{finance_heavy:2,trade_heavy:1,tech_office:1,manufacturing:2,retail:2,group:4}},{suite:'xinghan',name:"资产管理智能体（星瀚）",standard:10,complex:35,desc:"资产运营预警，多组织批量扫描，纯只读。",freq:{finance_heavy:20,trade_heavy:5,tech_office:2,manufacturing:15,retail:5,group:30}},{suite:'xinghan',name:"灵基应付智能体（星瀚）",standard:50,complex:90,desc:"收票补录与发票匹配。",freq:{finance_heavy:40,trade_heavy:30,tech_office:10,manufacturing:25,retail:15,group:50}},{suite:'xinghan',name:"灵基应收智能体（星瀚）",standard:50,complex:90,desc:"应收账款管理。",freq:{finance_heavy:40,trade_heavy:30,tech_office:10,manufacturing:20,retail:25,group:50}},{suite:'xinghan',name:"资金收支智能体（星瀚）",standard:50,complex:90,desc:"离线流水自动导入。",freq:{finance_heavy:30,trade_heavy:20,tech_office:5,manufacturing:15,retail:10,group:40}},{suite:'xinghan',name:"制造主数据巡检智能体（星瀚）",standard:160,complex:300,desc:"制造主数据质量检查。",freq:{finance_heavy:10,trade_heavy:5,tech_office:2,manufacturing:40,retail:3,group:15}},{suite:'xinghan',name:"集团内部对账智能体（星瀚）",standard:180,complex:300,desc:"星瀚ERP内部组织往来对账。",freq:{finance_heavy:10,trade_heavy:5,tech_office:2,manufacturing:8,retail:5,group:50}},{suite:'xinghan',name:"风险评估智能体（星瀚）",standard:160,complex:500,desc:"星瀚风险评估。",freq:{finance_heavy:5,trade_heavy:5,tech_office:2,manufacturing:3,retail:3,group:10}},{suite:'xinghan',name:"商城采购智能体（星瀚）",standard:50,complex:90,desc:"星瀚商城采购自动化。",freq:{finance_heavy:35,trade_heavy:80,tech_office:10,manufacturing:30,retail:30,group:40}},{suite:'xinghan',name:"标书查重（星瀚）",standard:130,complex:170,desc:"星瀚标书查重。",freq:{finance_heavy:5,trade_heavy:20,tech_office:2,manufacturing:5,retail:3,group:10}}];
+const tbody=document.getElementById('scene-tbody');let renderIndex=0;const elementMap=[];let currentTab='all';
+function renderTable(){tbody.innerHTML='';elementMap.length=0;renderIndex=0;structuredScenes.forEach(row=>{if(currentTab!=='all'&&row.suite!=='common'&&row.suite!==currentTab)return;if(currentTab==='suite'&&row.suite==='xinghan')return;if(currentTab==='xinghan'&&row.suite==='suite')return;const tr=document.createElement('tr');if(row.isHeader){tr.className='section-row';tr.innerHTML=`<td colspan="3">${row.name}</td>`;}else{tr.innerHTML=`<td><b>${row.name}</b><span class="desc-text">${row.desc}</span></td><td id="cost-${renderIndex}">0</td><td><input type="number" class="input-freq" id="freq-${renderIndex}" value="0" min="0" oninput="syncCustomMode();calculateAll()"><span style="color:#94a3b8;font-size:11px;margin-left:3px;">次/月</span></td>`;elementMap.push(row);renderIndex++;}tbody.appendChild(tr);});updateCostDisplay();}
+function switchTab(suite){currentTab=suite;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.suite===suite));renderTable();applyIndustryPreset();calculateAll();}
+function syncCustomMode(){document.getElementById('industry').value='custom';}
+function applyIndustryPreset(){const mode=document.getElementById('industry').value;if(mode==='custom')return;for(let i=0;i<renderIndex;i++){const freq=elementMap[i].freq[mode]||0;document.getElementById(`freq-${i}`).value=freq;}}
+function updateCostDisplay(){const complexity=document.getElementById('complexity').value;for(let i=0;i<renderIndex;i++){const item=elementMap[i];const cost=complexity==='standard'?item.standard:item.complex;const el=document.getElementById(`cost-${i}`);if(el)el.innerText=`${cost.toFixed(1)} 点/次`;}}
+function getPointPrice(points){if(points<=0)return{unit:0.20,total:0};if(points<=500000)return{unit:0.20,total:points*0.20};if(points<=1000000)return{unit:0.19,total:points*0.19};return{unit:0.18,total:points*0.18};}
+function calculateAll(){let seats=parseInt(document.getElementById('seats').value)||5;if(seats<5){seats=5;document.getElementById('seats').value=5;}const complexity=document.getElementById('complexity').value;const freePoints=seats*500*12;document.getElementById('lbl-free-year').innerText=freePoints.toLocaleString()+' 点';let total=0;for(let i=0;i<renderIndex;i++){const item=elementMap[i];const cost=complexity==='standard'?item.standard:item.complex;const el=document.getElementById(`cost-${i}`);if(el)el.innerText=`${cost.toFixed(1)} 点/次`;const freq=parseFloat(document.getElementById(`freq-${i}`)?.value)||0;total+=cost*freq*12;}total=Math.round(total);document.getElementById('lbl-consume-year').innerText=total.toLocaleString()+' 点';const gap=total-freePoints;let suggest=gap>0?Math.ceil(gap/10000)*10000:0;const seatCost=seats*99*12;const pc=getPointPrice(suggest);const tcv=seatCost+pc.total;document.getElementById('lbl-seat-cost').innerText=`¥${seatCost.toLocaleString()}`;document.getElementById('lbl-suggest-points').innerText=`${suggest.toLocaleString()} 点`;document.getElementById('lbl-point-unit-price').innerText=`¥${pc.unit.toFixed(2)}/点`;document.getElementById('lbl-point-total-cost').innerText=`¥${pc.total.toLocaleString()}`;document.getElementById('lbl-tcv-price').innerText=`¥${Math.round(tcv).toLocaleString()}`;const banner=document.getElementById('status-banner-div');if(suggest>0){banner.className='status-banner status-short';banner.innerText=`需要额外购买加量包：+${suggest.toLocaleString()} 点`;}else{banner.className='status-banner status-enough';banner.innerText='额度安全：席位自带年度点数已完美覆盖';}document.getElementById('result-content').style.display='block';}
+function openModal(){let hasData=false;for(let i=0;i<renderIndex;i++){if(parseFloat(document.getElementById(`freq-${i}`)?.value)>0){hasData=true;break;}}if(!hasData){alert('请先选择业务画像或手动填写月业务量。');return;}document.getElementById('modal-overlay').classList.add('active');}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('active');}
+document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+function collectAllData(){const indEl=document.getElementById('industry');const cpxEl=document.getElementById('complexity');const complexity=cpxEl.value;const scenes=[];for(let i=0;i<renderIndex;i++){const item=elementMap[i];const cost=complexity==='standard'?item.standard:item.complex;const freq=parseFloat(document.getElementById(`freq-${i}`)?.value)||0;if(freq>0)scenes.push({name:item.name,cost:cost.toFixed(1),freq});}return{industry:indEl.options[indEl.selectedIndex].text,seats:document.getElementById('seats').value,complexity:cpxEl.options[cpxEl.selectedIndex].text,freePointsYear:document.getElementById('lbl-free-year').innerText,consumeYear:document.getElementById('lbl-consume-year').innerText,seatCost:document.getElementById('lbl-seat-cost').innerText,suggestPoints:document.getElementById('lbl-suggest-points').innerText,pointUnitPrice:document.getElementById('lbl-point-unit-price').innerText,pointTotalCost:document.getElementById('lbl-point-total-cost').innerText,tcvPrice:document.getElementById('lbl-tcv-price').innerText,scenes};}
+function generateDetailMarkdown(userInfo,calcData){let md=`# 灵基点数增购测算记录\n\n> 生成时间：${new Date().toLocaleString('zh-CN')}\n\n---\n\n## 基本信息\n\n| 字段 | 内容 |\n|------|------|\n`;md+=`| 身份 | ${userInfo.identity} |\n| 公司名称 | ${userInfo.company} |\n| 姓名 | ${userInfo.name} |\n| 客户名称 | ${userInfo.customer} |\n| 客户预算 | ${userInfo.budget} |\n\n---\n\n## 客户配置\n\n| 配置项 | 值 |\n|--------|----|\n`;md+=`| 业务领域画像 | ${calcData.industry} |\n| 席位数 | ${calcData.seats} |\n| 复杂度 | ${calcData.complexity} |\n\n---\n\n## 测算结果\n\n| 指标 | 数值 |\n|------|------|\n`;md+=`| 席位自带年度总点数 | ${calcData.freePointsYear} |\n| 预计年度总消耗点数 | ${calcData.consumeYear} |\n| 基础席位年费 | ${calcData.seatCost} |\n| 建议增购点数包 | ${calcData.suggestPoints} |\n| 增购点数单价 | ${calcData.pointUnitPrice} |\n| 额外点数包费用 | ${calcData.pointTotalCost} |\n| **年度合同总价(TCV)** | **${calcData.tcvPrice}** |\n\n---\n\n## 各场景月业务量明细\n\n| 场景 | 单次消耗(点/次) | 月业务量(次/月) |\n|------|----------|----------|\n`;calcData.scenes.forEach(s=>{md+=`| ${s.name} | ${s.cost} | ${s.freq} |\n`;});md+=`\n---\n\n*本记录由灵基点数增购测算工具 v2 自动生成*\n`;return md;}
+async function submitRecord(){const identity=document.getElementById('modal-identity').value;const company=document.getElementById('modal-company').value.trim();const name=document.getElementById('modal-name').value.trim();const customer=document.getElementById('modal-customer').value.trim();const budget=document.getElementById('modal-budget').value.trim();if(!identity||!company||!name||!customer||!budget){alert('请填写所有必填字段');return;}const btn=document.getElementById('btn-do-submit');btn.disabled=true;btn.textContent='提交中...';try{const userInfo={identity,company,name,customer,budget:budget+'万/年'};calculateAll();const calcData=collectAllData();const detail=generateDetailMarkdown(userInfo,calcData);if(API_ENDPOINT){const resp=await fetch(API_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userInfo,calcData,detail})});if(!resp.ok)throw new Error('提交失败');}else{const blob=new Blob([detail],{type:'text/markdown'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`灵基测算_${customer}_${name}.md`;a.click();}closeModal();showToast('✅ 增购建议已生成！');}catch(err){showToast('❌ '+err.message,true);}finally{btn.disabled=false;btn.textContent='确认提交';}}
+function showToast(msg,isError){const t=document.getElementById('toast-msg');t.textContent=msg;t.className='toast show'+(isError?' error':'');setTimeout(()=>{t.className='toast';},3000);}
+renderTable();document.getElementById('industry').value='finance_heavy';applyIndustryPreset();updateCostDisplay();calculateAll();
+</script>
+</body>
+</html>
