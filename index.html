@@ -411,9 +411,10 @@ function calculateAll() {
     tierRows.forEach(row => {
         const tierKey = row.querySelector('.tier-select').value;
         const tier = USER_TIERS[tierKey];
-        let seats = parseInt(row.querySelector('.tier-seats').value) || tier.minSeats;
-        if (seats < tier.minSeats) { seats = tier.minSeats; row.querySelector('.tier-seats').value = seats; }
-        row.querySelector('.tier-seats').min = tier.minSeats;
+        const seatsInput = row.querySelector('.tier-seats');
+        let seats = parseInt(seatsInput.value) || tier.minSeats;
+        // 只在输入框失焦时强制最小值，输入过程中不重置
+        if (seats < tier.minSeats && document.activeElement !== seatsInput) { seats = tier.minSeats; seatsInput.value = seats; }
         const cost = seats * tier.price;
         const points = seats * tier.points;
         row.querySelector('.tier-subtotal').value = `¥${cost.toLocaleString()}`;
